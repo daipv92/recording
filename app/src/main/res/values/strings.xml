@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ModuloTech</string>
+
+    <string name="text_welcome">Welcome to Recording Call</string>
+</resources>

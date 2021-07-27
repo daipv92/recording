@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    /* Background/Dark */
+    <color name="backgroundDark">#FF2A3753</color>
+    /* Background/Light */
+    <color name="backgroundLight">#FFF1F3F5</color>
+    /* Background/F7 */
+    <color name="backgroundF7">#FFF7F8F9</color>
+    /* Primary/Light-blue */
+    <color name="primaryLightBlue">#FF35A0C3</color>
+    /* Primary/Dark-blue */
+    <color name="primaryDarkBlue">#FF4F66A3</color>
+    /* Primary/red */
+    <color name="primaryRed">#FFFF665E</color>
+    /* Primary/green */
+    <color name="primaryGreen">#FF00B189</color>
+    /* Primary/Purple */
+    <color name="primaryPurple">#FFB6B5E9</color>
+    /* Dark-gray */
+    <color name="darkGray">#FF5C5C5C</color>
+
+    /* background */
+    <color name="backgroundE5">#FFE5E5E5</color>
+
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="black">#000000</color>
+</resources>

@@ -1,0 +1,8 @@
+<resources>
+
+    <style name="CardTitleText" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/darkGray</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+</resources>
