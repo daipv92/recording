@@ -3,10 +3,7 @@ package com.modulotech.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.modulotech.utilities.Logger
-import com.modulotech.utilities.SharedPreferencesManager
-import com.modulotech.utilities.getRecordingCallOnXiaoMi
-import com.modulotech.utilities.nowByMiniSecond
+import com.modulotech.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -17,7 +14,8 @@ class UploadWorker constructor(
     override suspend fun doWork(): Result {
         Logger.i("UploadWorker#doWork")
         return withContext(Dispatchers.IO) {
-            uploadRecordingCall()
+            //getCallHistory(applicationContext)
+            //uploadRecordingCall()
             return@withContext Result.success()
         }
     }

@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     companion object {
-        const val WORKER_SYNC_NAME = "worker_sync_1"
+        const val WORKER_SYNC_NAME = "worker_sync_4"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,13 +43,21 @@ class MainActivity : AppCompatActivity() {
                 == PackageManager.PERMISSION_GRANTED
                 && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED
+                && checkSelfPermission(Manifest.permission.READ_CALL_LOG)
+                == PackageManager.PERMISSION_GRANTED
+                && checkSelfPermission(Manifest.permission.WRITE_CALL_LOG)
+                == PackageManager.PERMISSION_GRANTED
             ) {
                 setupWorker()
                 true
             } else {
                 ActivityCompat.requestPermissions(
                     this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE),
+                    arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_CALL_LOG,
+                        Manifest.permission.WRITE_CALL_LOG),
                     1
                 )
                 false
@@ -68,7 +76,9 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.isNotEmpty()
             && grantResults[0] == PackageManager.PERMISSION_GRANTED
-            && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            && grantResults[1] == PackageManager.PERMISSION_GRANTED
+            && grantResults[2] == PackageManager.PERMISSION_GRANTED
+            && grantResults[3] == PackageManager.PERMISSION_GRANTED) {
             setupWorker()
         }
     }
@@ -77,7 +87,6 @@ class MainActivity : AppCompatActivity() {
         Logger.i("setupWorker")
         val uploadRequest = PeriodicWorkRequestBuilder<UploadWorker>(15, TimeUnit.MINUTES)
                 .addTag(WORKER_SYNC_NAME)
-                .setInitialDelay(30, TimeUnit.SECONDS)
                 .build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WORKER_SYNC_NAME,
