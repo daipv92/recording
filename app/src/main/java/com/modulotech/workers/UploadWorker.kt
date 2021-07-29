@@ -14,24 +14,17 @@ class UploadWorker constructor(
     override suspend fun doWork(): Result {
         Logger.i("UploadWorker#doWork")
         return withContext(Dispatchers.IO) {
-            //getCallHistory(applicationContext)
-            //uploadRecordingCall()
+            uploadRecordingCall()
             return@withContext Result.success()
         }
     }
 
     private fun uploadRecordingCall() {
         Logger.i("UploadWorker#uploadRecordingCall")
-        val list = getRecordingCallOnXiaoMi()
+        val list = getCallInfo(applicationContext, nowByMiniSecond() - 5 * 24 * 60 * 60 * 1000)
         if (list.isNotEmpty()) {
             val lastSynchronizedTime = SharedPreferencesManager.getLastSynchronizedTime(applicationContext)
             Logger.i("UploadWorker#uploadRecordingCall: lastSynchronizedTime = $lastSynchronizedTime")
-            val newRecordFiles = list.filter { it.lastModified > lastSynchronizedTime }
-            if (newRecordFiles.isNotEmpty()) {
-                newRecordFiles.forEach { file ->
-                    Logger.i("uploadRecordingCall: ${file.fileName}")
-                }
-            }
             SharedPreferencesManager.setLastSynchronizedTime(applicationContext, nowByMiniSecond())
         }
     }
