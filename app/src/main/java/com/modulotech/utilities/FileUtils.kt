@@ -141,7 +141,7 @@ fun convertCallTypeToString(callType: String?): String {
 }
 
 fun getRecordingCallOnXiaoMi(timeFrom: Long): List<RecordFile> {
-    return getPlayList("/storage/emulated/0/MIUI/sound_recorder/call_rec/", timeFrom)
+    return getPlayList(XIAOMI_RECORD_PATH, timeFrom)
 }
 
 fun getPlayList(rootPath: String, timeFrom: Long): List<RecordFile> {
