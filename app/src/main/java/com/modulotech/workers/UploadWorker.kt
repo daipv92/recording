@@ -3,6 +3,7 @@ package com.modulotech.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.modulotech.api.NetworkAPI
 import com.modulotech.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,13 +20,25 @@ class UploadWorker constructor(
         }
     }
 
-    private fun uploadRecordingCall() {
-        Logger.i("UploadWorker#uploadRecordingCall")
-        val list = getCallInfo(applicationContext, nowByMiniSecond() - 5 * 24 * 60 * 60 * 1000)
+    private suspend fun uploadRecordingCall() {
+        val lastSynchronizedTime = SharedPreferencesManager.getLastSynchronizedTime(applicationContext)
+        Logger.i("UploadWorker#uploadRecordingCall: from = ${convertTimeStampToString(lastSynchronizedTime)}")
+        val list = getCallInfo(applicationContext, lastSynchronizedTime)
+        val timeStampNow = nowByMiniSecond()
         if (list.isNotEmpty()) {
-            val lastSynchronizedTime = SharedPreferencesManager.getLastSynchronizedTime(applicationContext)
-            Logger.i("UploadWorker#uploadRecordingCall: lastSynchronizedTime = $lastSynchronizedTime")
-            SharedPreferencesManager.setLastSynchronizedTime(applicationContext, nowByMiniSecond())
+            for (call in list) {
+                // check this call is recorded or NOT
+                if (!call.absolutePath.isNullOrBlank()) {
+                    NetworkAPI().uploadRecordFile(
+                        customerPhone = call.phone,
+                        type = call.type,
+                        salePhone = call.myPhoneNumber,
+                        createAt = convertDateToString(call.time),
+                        fileUri = call.absolutePath
+                    )
+                }
+            }
         }
+        SharedPreferencesManager.setLastSynchronizedTime(applicationContext, timeStampNow)
     }
 }

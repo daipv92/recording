@@ -19,7 +19,31 @@ const val OUT_GOING = "Outgoing"
 const val IN_COMING = "Incoming"
 const val MISSED = "Missed"
 
-fun getCallInfo(context: Context, timeFrom: Long) : List<CallInfo> {
+fun getCallInfo(context: Context, timeFrom: Long): List<CallInfo> {
+    // check permissions
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1 &&
+        (
+                ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+                        || ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+                        || ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_CALL_LOG
+                ) != PackageManager.PERMISSION_GRANTED
+                        || ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_CALL_LOG
+                ) != PackageManager.PERMISSION_GRANTED
+                )
+    ) {
+        Logger.e("getCallInfo: can not get record cause to miss permissions")
+        return emptyList()
+    }
     val myPhoneNumber = getMyPhoneNumber(context)
 
     // load data
@@ -30,7 +54,9 @@ fun getCallInfo(context: Context, timeFrom: Long) : List<CallInfo> {
     val callInfoList = ArrayList<CallInfo>()
 
     // filter in-coming and out-going call
-    val connectedCallList = callHistoryList.filter { (it.type == OUT_GOING || it.type == IN_COMING) && it.duration != "0"}.toMutableList()
+    val connectedCallList =
+        callHistoryList.filter { (it.type == OUT_GOING || it.type == IN_COMING) && it.duration != "0" }
+            .toMutableList()
     if (connectedCallList.isNotEmpty()) {
         for (call in connectedCallList) {
             val timeDifferencePossible = 60 * 1000  // 60 seconds
@@ -57,7 +83,7 @@ fun getCallInfo(context: Context, timeFrom: Long) : List<CallInfo> {
     return callInfoList
 }
 
-fun getCallHistory(context: Context, timeFrom: Long) : List<CallHistory> {
+fun getCallHistory(context: Context, timeFrom: Long): List<CallHistory> {
     val callHistoryList = ArrayList<CallHistory>()
     val projection = arrayOf(
         CallLog.Calls.CACHED_NAME,
@@ -68,7 +94,13 @@ fun getCallHistory(context: Context, timeFrom: Long) : List<CallHistory> {
     )
     val order = CallLog.Calls.DATE + " DESC"
     val cursor: Cursor? =
-        context.contentResolver.query(CallLog.Calls.CONTENT_URI, projection, CallLog.Calls.DATE + ">= ?", arrayOf(timeFrom.toString()), order)
+        context.contentResolver.query(
+            CallLog.Calls.CONTENT_URI,
+            projection,
+            CallLog.Calls.DATE + ">= ?",
+            arrayOf(timeFrom.toString()),
+            order
+        )
     if (cursor != null) {
         while (cursor.moveToNext()) {
             val name: String? = cursor.getString(0)
@@ -92,7 +124,7 @@ fun getCallHistory(context: Context, timeFrom: Long) : List<CallHistory> {
     return callHistoryList
 }
 
-private fun convertDateStringToDate(date: String) : Date {
+private fun convertDateStringToDate(date: String): Date {
     return if (date.isNullOrBlank()) return Date(0) else Date(date.toLong())
 }
 
@@ -108,9 +140,10 @@ fun convertCallTypeToString(callType: String?): String {
     }
 }
 
-fun getRecordingCallOnXiaoMi(timeFrom: Long) : List<RecordFile> {
+fun getRecordingCallOnXiaoMi(timeFrom: Long): List<RecordFile> {
     return getPlayList("/storage/emulated/0/MIUI/sound_recorder/call_rec/", timeFrom)
 }
+
 fun getPlayList(rootPath: String, timeFrom: Long): List<RecordFile> {
     val fileList = ArrayList<RecordFile>()
     val rootFolder = File(rootPath)
@@ -153,7 +186,8 @@ private fun getMyPhoneNumber(context: Context): String {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.READ_PHONE_STATE
-            ) != PackageManager.PERMISSION_GRANTED) {
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             return ""
         }
         val subscriptionManager = SubscriptionManager.from(context)

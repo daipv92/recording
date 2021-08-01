@@ -4,40 +4,40 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.telephony.SubscriptionManager
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.navigation.findNavController
-import androidx.navigation.ui.setupWithNavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.modulotech.databinding.ActivityMainBinding
 import com.modulotech.utilities.*
 import com.modulotech.workers.UploadWorker
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.app_bar.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 
-@AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
     companion object {
-        const val WORKER_SYNC_NAME = "worker_sync_5"
+        const val WORKER_SYNC_NAME = "record_worker_sync"
     }
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_main)
-
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
         setSupportActionBar(toolbar)
 
-        val navController = findNavController(R.id.navHostFragment)
-        toolbar.setupWithNavController(navController)
-
+        initViews()
         requestStoragePermission()
+    }
+
+    private fun initViews() {
+        binding.btnRequestPermission.setOnClickListener(this)
     }
 
     private fun requestStoragePermission(): Boolean {
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                 && checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                 == PackageManager.PERMISSION_GRANTED
             ) {
-                setupWorker()
+                onPermissionAllow()
                 true
             } else {
                 ActivityCompat.requestPermissions(
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                 false
             }
         } else {
-            setupWorker()
+            onPermissionAllow()
             true
         }
     }
@@ -85,14 +85,20 @@ class MainActivity : AppCompatActivity() {
             && grantResults[1] == PackageManager.PERMISSION_GRANTED
             && grantResults[2] == PackageManager.PERMISSION_GRANTED
             && grantResults[3] == PackageManager.PERMISSION_GRANTED
-            && grantResults[4] == PackageManager.PERMISSION_GRANTED) {
-            setupWorker()
+            && grantResults[4] == PackageManager.PERMISSION_GRANTED
+        ) {
+            onPermissionAllow()
+        } else {
+            binding.containerPermissionNotAllow.visibility = View.VISIBLE
+            binding.containerPermissionOK.visibility = View.GONE
         }
     }
 
-    private fun setupWorker() {
-        Logger.i("setupWorker")
-        val uploadRequest = PeriodicWorkRequestBuilder<UploadWorker>(15, TimeUnit.MINUTES)
+    private fun onPermissionAllow() {
+        Logger.i("onPermissionAllow")
+        binding.containerPermissionOK.visibility = View.VISIBLE
+        binding.containerPermissionNotAllow.visibility = View.GONE
+        val uploadRequest = PeriodicWorkRequestBuilder<UploadWorker>(30, TimeUnit.MINUTES)
                 .addTag(WORKER_SYNC_NAME)
                 .build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
@@ -102,7 +108,9 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        return findNavController(R.id.navHostFragment).navigateUp()
+    override fun onClick(v: View) {
+        if (v.id == R.id.btnRequestPermission) {
+            requestStoragePermission()
+        }
     }
 }

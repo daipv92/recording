@@ -14,6 +14,12 @@ fun convertDateToString(date: Date): String {
     return df.format(date)
 }
 
+fun convertTimeStampToString(timestamp: Long): String {
+    val pattern = "yyyyMMdd HH:mm:ss"
+    val df: DateFormat = SimpleDateFormat(pattern)
+    return df.format(Date(timestamp))
+}
+
 fun convertStringToDate(str: String) : Date {
     val pattern = "yyyyMMddHHmmss"
     val df: DateFormat = SimpleDateFormat(pattern)

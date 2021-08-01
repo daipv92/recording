@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">ModuloTech</string>
+    <string name="app_name">Recording</string>
 
-    <string name="text_welcome">Welcome to Recording Call</string>
+    <string name="btn_request_permission">Allow Permissions</string>
+    <string name="text_permission_allow">Permission is OK. App is synchronizing record file to server</string>
+    <string name="text_permission_allow_not">Permission is not allowed. Please select "Allow permissions" to allow access to record files</string>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Recording</string>
+
+    <string name="btn_request_permission">Thêm quyền truy cập</string>
+    <string name="text_permission_allow">Bạn đã cho quyền truy cập permission đầy đủ. Ứng dụng đang thực hiện đồng bộ các file ghi âm lên server...</string>
+    <string name="text_permission_allow_not">Vui lòng bấm "Thêm quyền truy cập" bên dưới và cho phép ứng dụng có thể lấy dữ liệu ghi âm cuộc gọi</string>
+</resources>
