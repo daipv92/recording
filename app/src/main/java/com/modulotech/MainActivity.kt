@@ -1,6 +1,10 @@
 package com.modulotech
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.modulotech.adapters.RestaurantAdapter
 import com.modulotech.databinding.ActivityMainBinding
 import com.modulotech.utilities.*
 import com.modulotech.workers.UploadWorker
@@ -22,8 +27,18 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     companion object {
         const val WORKER_SYNC_NAME = "record_worker_sync"
+        const val WORKER_DURATION: Long = 30 // minutes
     }
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var adapter: RestaurantAdapter
+
+    private val synchronizedReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Logger.i("Receive action update data list")
+            updateDisplayInfo()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,14 +48,32 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         setSupportActionBar(toolbar)
 
         initViews()
+        registerReceiver()
         requestStoragePermission()
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver()
+        super.onDestroy()
+    }
+
+    private fun registerReceiver() {
+        val filter = IntentFilter(ACTION_UPDATE_SYNCHRONIZED_LIST)
+        registerReceiver(synchronizedReceiver, filter)
+    }
+
+    private fun unregisterReceiver() {
+        unregisterReceiver(synchronizedReceiver)
     }
 
     private fun initViews() {
         binding.btnRequestPermission.setOnClickListener(this)
+        adapter = RestaurantAdapter()
+        binding?.restaurantList.adapter = adapter
     }
 
     private fun requestStoragePermission(): Boolean {
+        Logger.i("requestStoragePermission")
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED
@@ -90,15 +123,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             onPermissionAllow()
         } else {
             binding.containerPermissionNotAllow.visibility = View.VISIBLE
-            binding.containerPermissionOK.visibility = View.GONE
         }
     }
 
     private fun onPermissionAllow() {
         Logger.i("onPermissionAllow")
-        binding.containerPermissionOK.visibility = View.VISIBLE
         binding.containerPermissionNotAllow.visibility = View.GONE
-        val uploadRequest = PeriodicWorkRequestBuilder<UploadWorker>(30, TimeUnit.MINUTES)
+        updateDisplayInfo()
+        val uploadRequest = PeriodicWorkRequestBuilder<UploadWorker>(WORKER_DURATION, TimeUnit.MINUTES)
                 .addTag(WORKER_SYNC_NAME)
                 .build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
@@ -106,6 +138,31 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             ExistingPeriodicWorkPolicy.KEEP,
             uploadRequest
         )
+
+        // For test
+        /*GlobalScope.launch {
+            forTest()
+        }*/
+    }
+
+    private fun forTest() {
+        val lastDayAgo = 5 //days
+        val list = getCallInfo(applicationContext, nowByMiniSecond() - lastDayAgo * 24 * 60 * 60 * 1000)
+    }
+
+    private fun updateDisplayInfo() {
+        binding.containerStatus.visibility = View.VISIBLE
+        val lastSynchronizedTime = SharedPreferencesManager.getLastSynchronizedTime(this)
+        if (lastSynchronizedTime > 0) {
+            binding.lastSynchronizedTime.text = convertTimeStampToString(lastSynchronizedTime)
+        } else {
+            binding.lastSynchronizedTime.text = "Not yet"
+        }
+        binding.synchronizedDuration.text = "$WORKER_DURATION minutes"
+        val list = SharedPreferencesManager.getSynchronizedCallList(this)
+        if (list.isNotEmpty()) {
+            adapter.submitList(list)
+        }
     }
 
     override fun onClick(v: View) {

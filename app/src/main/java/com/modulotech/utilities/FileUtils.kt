@@ -200,3 +200,18 @@ private fun getMyPhoneNumber(context: Context): String {
     }
     return ""
 }
+
+fun getTestData() : List<CallInfo> {
+    val count = 4
+    val ret = mutableListOf<CallInfo>()
+    for (i in 1..count) {
+        ret.add(
+            CallInfo(
+                "Test", "1234567", "Incoming",
+                Date(nowByMiniSecond()), "2", "fileName",
+                "", "033775558"
+            )
+        )
+    }
+    return ret
+}

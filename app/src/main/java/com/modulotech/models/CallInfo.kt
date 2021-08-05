@@ -13,6 +13,8 @@ data class CallInfo(
     val absolutePath: String,
     val myPhoneNumber: String
 ) {
+    val timeAsString = convertDateToString(time)
+
     override fun toString(): String {
         return "(name = $name, phone = $phone, myPhone = $myPhoneNumber, type = $type, time = ${convertDateToString(time)}" +
                 ", duration = $duration, fileName = $fileName, path = $absolutePath)"

@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 
 class NetworkAPI {
-    suspend fun uploadRecordFile(customerPhone: String, type: String, salePhone: String, createAt: String , fileUri: String) {
+    suspend fun uploadRecordFile(customerPhone: String, type: String, salePhone: String, createAt: String , fileUri: String) : Boolean {
         val networkService = provideNetworkService()
 
         val file = File(fileUri)
@@ -20,13 +20,14 @@ class NetworkAPI {
 
         val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
-        try {
+        return try {
             val response = networkService.uploadRecord(TOKEN, customerPhone, type, salePhone, createAt, filePart)
             Logger.i("uploadRecordFile, success = ${response.success}")
+            response.success
         } catch (e: Exception) {
             Logger.e("uploadRecordFile, $e")
+            false
         }
-
     }
 
     private fun provideNetworkService(): NetworkService {
