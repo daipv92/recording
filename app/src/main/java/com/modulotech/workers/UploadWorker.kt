@@ -49,7 +49,7 @@ class UploadWorker constructor(
             if (synchronizedCallList.isNotEmpty()) {
                 val oldList = SharedPreferencesManager.getSynchronizedCallList(applicationContext)
                 synchronizedCallList.addAll(oldList)
-                val finalList = if (synchronizedCallList.size > 10) synchronizedCallList.subList(0, 9) else synchronizedCallList
+                val finalList = if (synchronizedCallList.size > 10) synchronizedCallList.subList(0, 10) else synchronizedCallList
                SharedPreferencesManager.setSynchronizedCallList(applicationContext, finalList)
             }
         }
